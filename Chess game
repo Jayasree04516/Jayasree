@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HTML Chess Game</title>
+  <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/www/css/chessboard.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+    }
+    #board {
+      width: 400px;
+      margin: 20px auto;
+    }
+    #status {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Chess Game (HTML + JS)</h1>
+  <div id="board"></div>
+  <div id="status"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+  <script src="https://unpkg.com/chessboardjs@1.0.0/www/js/chessboard.js"></script>
+  <script>
+    const game = new Chess();
+
+    function onDragStart(source, piece, position, orientation) {
+      if (game.game_over() ||
+          (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+          (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+        return false;
+      }
+    }
+
+    function onDrop(source, target) {
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q' // auto promote to queen
+      });
+
+      if (move === null) return 'snapback';
+
+      updateStatus();
+    }
+
+    function onSnapEnd() {
+      board.position(game.fen());
+    }
+
+    function updateStatus() {
+      let status = '';
+
+      let moveColor = game.turn() === 'w' ? 'White' : 'Black';
+
+      if (game.in_checkmate()) {
+        status = `Game over, ${moveColor} is in checkmate.`;
+      } else if (game.in_draw()) {
+        status = 'Game over, drawn position.';
+      } else {
+        status = `${moveColor} to move`;
+
+        if (game.in_check()) {
+          status += ` – ${moveColor} is in check.`;
+        }
+      }
+
+      document.getElementById('status').innerText = status;
+    }
+
+    const board = Chessboard('board', {
+      draggable: true,
+      position: 'start',
+      onDragStart: onDragStart,
+      onDrop: onDrop,
+      onSnapEnd: onSnapEnd
+    });
+
+    updateStatus();
+  </script>
+
+</body>
+</html>
